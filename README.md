@@ -14,6 +14,7 @@ Simple e-commerce to test Django &amp; Vue stack
 
 ```bash
 source ./env_3_9_2/bin/activate
+python manage.py runserver
 ```
 
 ## Frontend
