@@ -35,3 +35,9 @@ npm run serve
 ```
 npm run build
 ```
+
+
+
+## Source
+
+Project based on [E-commerce Website With Django and Vue Tutorial (Django Rest Framework)](https://www.youtube.com/watch?v=Yg5zkd9nm6w)
