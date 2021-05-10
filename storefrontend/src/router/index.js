@@ -6,6 +6,8 @@ import Search from '../views/Search.vue'
 import Cart from '../views/Cart.vue'
 import SignUp from '../views/SignUp.vue'
 import SignIn from '../views/SignIn.vue'
+import Account from '../views/Account.vue'
+import store from '../store'
 
 const routes = [
   {
@@ -30,6 +32,14 @@ const routes = [
     path: '/sign-in',
     name: 'SignIn',
     component: SignIn
+  },
+	{
+    path: '/account',
+    name: 'Account',
+    component: Account,
+		meta: {
+			requireLogin: true,
+		}
   },
   {
     path: '/search',
@@ -56,6 +66,14 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
-})
+});
 
-export default router
+router.beforeEach((to, from, next) => {
+	if (to.matched.some(record => record.meta.requireLogin) && !store.state.isAuthenticated) {
+		next({ name: 'SignIn', query: { to: to.path } });
+	} else {
+		next();
+	}
+});
+
+export default router;
