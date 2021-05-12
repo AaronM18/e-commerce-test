@@ -67,7 +67,7 @@ export default {
 
       const item = {
         product: this.product,
-        quantity: this.quantity,
+        quantity: parseInt(this.quantity),
       };
 
       this.$store.commit('addToCart', item);
