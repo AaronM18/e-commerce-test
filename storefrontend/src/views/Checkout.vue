@@ -143,6 +143,13 @@ export default {
 		document.title = 'Checkout | Store';
 
 		this.cart = this.$store.state.cart;
+
+		if (this.cartTotalLenght > 0) {
+			this.stripe = Stripe('pk_test_51GViHGBYFrHac3W376EpFHqVxccb6wcPlxWPRSohAZSFySBkGXYpvm3XFVC3a8VSamBXdx8Wm6OqxH92QkOrvCJ500BMBiKrcs');
+			const elements = this.stripe.elements();
+			this.card = elements.create('card', { hidePostalCode: true });
+			this.card.mount('#card-element');
+		}
 	},
 	methods: {
 		getItemTotal(item) {
@@ -178,6 +185,61 @@ export default {
 			if (this.place === '') {
 				this.errors.push('The place field is missing!');
 			}
+
+			if (!this.errors.length) {
+				this.$store.commit('setIsLoading', true);
+
+				this.stripe.createToken(this.card).then(result => {
+					if(result.error) {
+						this.$store.commit('setIsLoading', false);
+
+						this.errors.push('Something went wrong with Stripe. Please try again');
+
+						console.error(result.error.message);
+					} else {
+						this.stripeTokenHandler(result.token);
+					}
+				})
+			}
+		},
+		async stripeTokenHandler(token) {
+			const items = [];
+
+			this.cart.items.forEach(item => {
+				console.log(item)
+				
+				const obj = {
+					product: item.product.id,
+					quantity: item.quantity,
+					price: item.product.price * item.quantity,
+				}
+
+				items.push(obj);
+			});
+
+			const data = {
+				'first_name': this.first_name,
+				'last_name': this.last_name,
+				'email': this.email,
+				'address': this.address,
+				'zipcode': this.zipcode,
+				'place': this.place,
+				'phone': this.phone,
+				'items': items,
+				'stripe_token': token.id,
+			};
+
+			await axios.post('/api/v1/checkout/', data).then(response => {
+				this.$store.commit('clearCart');
+				this.$router.push('/cart/success');
+
+			})
+			.catch(error => {
+				this.errors.push('Something went wrong. Please try again');
+				console.error(error);
+			});
+
+			this.$store.commit('setIsLoading', false);
 		}
 	},
 	computed: {
